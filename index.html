@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="desktopApp">
+
+<head>
+    <script src="angular.min.js"></script>
+    <script src="mqtt.min.js" type="text/javascript"></script>
+    <script src="index.js"></script>
+    <script src="action.js"></script>
+    <script src="https://kit.fontawesome.com/1279f0a242.js" crossorigin="anonymous"></script>
+    <!-- <link rel="stylesheet" href="todo.css"> -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous"> -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"> -->
+    <title>OPCConnect</title>
+    <style>
+        @font-face {
+            font-family: "mainfont";
+            src: url(fonts/Montserrat-Regular.ttf) format("truetype");
+        }
+
+        @font-face {
+            font-family: "boldfont";
+            src: url(fonts/Montserrat-Bold.ttf) format("truetype");
+        }
+
+        summary {
+            outline: 0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "mainfont";
+        }
+
+        .bold {
+            font-family: "boldfont";
+        }
+
+        .heading {
+            font-size: 1.3em;
+        }
+
+        .maincontainer {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            grid-template-rows: 50px 1fr;
+            grid-template-areas: "h c" "l c";
+            min-height: 100vh;
+        }
+
+        .header {
+            background-color: rgb(255, 255, 255);
+            grid-area: h;
+            padding: 8px;
+            border-bottom: 2px solid #252525;
+        }
+
+        .leftnav {
+            /* background-color:#D4DAE0; */
+            grid-area: l;
+            font-size: 0.9em;
+        }
+
+        .content {
+            /* background-color: rgb(255, 166, 0); */
+            grid-area: c;
+            border-left: 1px solid #252525;
+            padding: 20px;
+        }
+
+        .navlink {
+            border-bottom: 1px solid #252525;
+            height: 20px;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .navlink-active {
+            border-bottom: 3px solid #48CFFA;
+            background-color: #48CFFA;
+            height: 20px;
+            padding: 10px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .greencircle {
+            width: 16px;
+            height: 16px;
+            border-radius: 8px;
+            background-color: chartreuse;
+            margin-right: 2px;
+            float: right;
+        }
+
+        .redcircle {
+            width: 16px;
+            height: 16px;
+            border-radius: 8px;
+            background-color: rgb(255, 115, 0);
+            margin-right: 2px;
+            float: right;
+        }
+
+        input {
+            width: 300px;
+            padding: 5px;
+            font-family: "mainfont";
+
+        }
+
+        input[type="text"] {
+            margin-bottom: 12px;
+            margin-top: 9px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .positivebutton {
+            background-color: #48CFFA;
+            color: white;
+            font-family: "boldfont";
+            border: 1px solid #48CFFA;
+            padding: 5px;
+            width: 84px;
+        }
+
+        .negativebutton {
+            background-color: white;
+            border: 1px solid #48CFFA;
+            color: #48CFFA;
+            font-family: "boldfont";
+            padding: 5px;
+            width: 84px;
+        }
+
+        .info,
+        .success,
+        .warning,
+        .error {
+            border: 1px solid;
+            margin: 10px 0px;
+            padding: 15px 10px 15px 30px;
+            background-repeat: no-repeat;
+            background-position: 5px center;
+        }
+
+        .info {
+            color: #00529B;
+            background-color: #BDE5F8;
+
+        }
+
+        .success {
+            color: #4F8A10;
+            background-color: #DFF2BF;
+
+        }
+
+        .warning {
+            color: #9F6000;
+            background-color: #FEEFB3;
+
+        }
+
+        .error {
+            color: #D8000C;
+            background-color: #FFBABA;
+
+        }
+
+        label {
+            display: block;
+            width: 150px;
+        }
+
+        pre {
+            background-color: lightgrey;
+            max-width: 1024px;
+            word-wrap: break-word;
+            white-space: initial;
+            /* padding: 10px; */
+        }
+
+        /*input[type="checkbox"]{
+            width: 30px;
+        }*/
+
+        /* The switch - the box around the slider */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        /* Hide default HTML checkbox */
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        /* The slider */
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked+.slider {
+            background-color: #2196F3;
+        }
+
+        input:focus+.slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked+.slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        hr {
+            margin: 1rem;
+            /*margin-bottom: 0;*/
+            border: 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        /*hr:last-child {*/
+        /*display: none;*/
+        /*}*/
+        .tab {
+            overflow: hidden;
+            border-bottom: 1px solid #ccc;
+            /*border-top: 0px;*/
+
+            /*background-color: #f1f1f1;*/
+            width: fit-content;
+        }
+
+        /* Style the buttons that are used to open the tab content */
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 5px;
+            width: 84px;
+            transition: 0.3s;
+            font-family: "mainfont";
+        }
+
+        /* Change background color of buttons on hover */
+        .tab button:hover {
+            background-color: #ddd;
+        }
+
+        /* Create an active/current tablink class */
+        .tab button.active {
+            background-color: #ccc;
+        }
+
+        .hint__circle {
+            margin-left: 5px;
+            border-radius: 100%;
+            background: #48CFFA;
+            /*width: 24px;*/
+            color: white;
+            width: 30px;
+            padding: 2px 5px;
+            font-size: 9px;
+        }
+
+        #pre {
+            height: 60vh;
+            overflow: auto;
+            display: flex;
+            flex-direction: column-reverse;
+        }
+
+        .tabledisplay table,
+        th,
+        td {
+            border: 1px solid rgb(145, 145, 145);
+            border-collapse: collapse;
+        }
+
+        .tabledisplay td {
+            padding: 2px;
+        }
+
+        .custom-select {
+    font-size: 16px; /* Adjust the font size as needed */
+}
+
+
+        /* 
+        .password-container {
+    position: relative;
+   
+}
+
+
+.toggle-password {
+    position:relative;
+    
+    cursor: pointer;
+} */
+
+        /* .password-container {
+    position: relative;
+}
+
+
+
+.toggle-password {
+   
+    position:relative;
+    
+    transform: translateY(-50%);
+    cursor: pointer;
+} */
+        .password-container {
+            position: relative;
+            width: 100%;
+            /* Optionally, set a specific width for the container */
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+
+
+        .toggle-password {
+            cursor: pointer;
+            position: relative;
+            /* Position relative instead of absolute */
+            right: 30px;
+            /* Adjust the position as needed */
+        }
+
+        /* Additional styles to center the eye icon vertically in the input box */
+        .toggle-password i {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+
+<body ng-controller='indexController'>
+    <div class="maincontainer">
+        <div class="header">
+            <img src="data:image/png;base64,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"
+                style="height:34px"><br>
+        </div>
+        <div class="leftnav">
+            <div class="navlink" ng-click="registration=true;config=false;network=false"
+                ng-class=" registration ? 'navlink-active' : 'navlink' ">
+                <div style="float:left;" ng-class=" registration ? 'bold' : '' ">Cloud registration</div>
+                <div
+                    ng-class="{'redcircle': registration_color === 'red', 'greencircle': registration_color === 'green'}">
+                </div>
+            </div>
+            <div class="navlink" ng-click="registration=false;config=true;network=false"
+                ng-class=" config ? 'navlink-active' : 'navlink' ">
+                <div style="clear:both;float:left;" ng-class=" config ? 'bold' : '' ">OPC Server config</div>
+                <div ng-class="{'redcircle': config_color === 'red', 'greencircle': config_color === 'green'}"></div>
+            </div>
+            <div class="navlink" ng-click="registration=false;config=false;network=true"
+                ng-class=" network ? 'navlink-active' : 'navlink' ">
+                <div style="clear:both;float:left;" ng-class=" network ? 'bold' : '' ">Network</div>
+                <div ng-class="{'redcircle': network_color === 'red', 'greencircle': network_color === 'green'}"></div>
+            </div>
+        </div>
+        <div class="content">
+            <div id="network" ng-show="network">
+                <div class="cloud bold heading">Network</div>
+                <div style="margin-top: 20px;" ng-class="network_class">
+                    {{network_msg}}
+                </div><br>
+                <!--<div style="font-size: 0.8em;" id="version" onload="showVersion()">
+                Version: 
+            </div>-->
+            </div>
+            <div id="registration" ng-show="registration">
+                <div class="cloud bold heading">Cloud registration</div>
+                <div style="margin-top: 20px;">
+                    <label for="clientId">Client id</label>
+                    <input type="text" id="clientId" type="text" ng-model="clientId" required />
+                    <br />
+                    <br />
+                    <button class="positivebutton" ng-click="submitClientRegistration()">Save</button>
+                    <!-- <button class="negativebutton">Cancel</button> -->
+                </div><br>
+                <div ng-class="registration_class">{{registration_msg}}</div>
+            </div>
+
+            <div id="config" ng-show="config">
+                <div class="cloud bold heading">Configuration</div>
+
+                <div id="configForm" ng-repeat="form in forms" style="margin-top: 20px;">
+                    <details>
+                        <summary>
+                            <span style="cursor: pointer;" ng-click="">{{form.name}}</span> &nbsp;&nbsp;
+
+                            <div ng-class="classConvert(forms[$index].status_class)"></div>
+                            <button ng-hide="lget(form.id)" ng-click="test(form);" class="positivebutton"
+                                id="testopc">Test </button>
+                            <button ng-hide="lget(form.id)" ng-click="start(form.id);" class="positivebutton"
+                                id="startopc">Start </button>
+                            <button ng-show="lget(form.id)" ng-click="stop(form.id);" class="negativebutton"
+                                id="stopopc">Stop </button>
+                            <br>
+                        </summary>
+                        <div style="margin-left: 1rem">
+                            <div ng-class="form.status_class">{{form.status}}</div><br>
+
+                            <div class="tab">
+                                <!-- <span style="cursor: pointer;" ng-click="">{{form.name}}</span> &nbsp;&nbsp; -->
+
+                                <button
+                                    ng-click="form.static.config = true; form.static.tags = false ; form.static.logs = false; unsubscribeTags(form);"
+                                    ng-class=" form.static.config ? 'active' : '' ">Config</button>
+                                <button
+                                    ng-click="form.static.config = false; form.static.tags = true ; form.static.logs = false; loadTags(form);"
+                                    ng-class=" form.static.tags ? 'active' : '' ">Taglist</button>
+                                <!-- <button ng-click="form.static.config = false; form.static.tags = true ; form.static.logs = false; subscribeTags($event, form);" ng-class=" form.static.tags ? 'active' : '' " >Taglist</button> -->
+
+                                <button
+                                    ng-click="form.static.config = false; form.static.tags = false ; form.static.logs = true; unsubscribeTags(form);"
+                                    ng-class=" form.static.logs ? 'active' : '' ">Logs</button>
+                            </div>
+
+
+                            <span
+                                ng-init="form.static.config=true;form.static.tags=false;form.static.logs=false;"></span>
+                            <div ng-show="form.static.config"><br>
+                                <label for="name" title="Pick an identifier name">Name <span
+                                        class="hint__circle">?</span></label>
+                                <input type="text" id="name" ng-model="form.name"><br>
+                                <label for="Username">Username</label>
+                                <input type="text" id="Username" ng-model="form.OPC_SERVER_USER"><br>
+                                <!-- <label for="Password">Password</label>
+	                    <input type="text" id="Password" ng-model="form.OPC_SERVER_PASS"><br>
+                        <input type="password" id="Password" ng-model="form.OPC_SERVER_PASS"><br> -->
+                                <div class="password-container">
+                                    <label for="Password">Password</label>
+                                    <div class="input-wrapper">
+                                        <input type="password" id="password-input">
+                                        <span class="toggle-password" onclick="togglePasswordVisibility()">
+                                            <i class="fa fa-eye-slash"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+
+
+
+
+                                <label for="Host">Host</label>
+                                <input type="text" id="Host" ng-model="form.OPC_SERVER_HOST" placeholder="Eg: opc.tcp://DESKTOP-GUOD63R:53530/OPCUA/SimulationServer"><br>
+
+                                <!-- <label for="Security">Security_ctx</label>
+                                <input type="text" id="Security" ng-model="form.OPC_SERVER_SECURITY" placeholder="Eg: Basic256&Sign"><br> -->
+
+                                <!-- <label for="Security_Policy">Security Policy</label>
+                                <input type="text" id="Security_Policy" ng-model="form.OPC_SERVER_SECURITY_POLICY" placeholder="Eg: Basic256&Sign or None"><br>
+                                <label for="Security_Mode">Security Mode</label>
+                                <input type="text" id="Security_Mode" ng-model="form.OPC_SERVER_SECURITY_MODE" placeholder="Eg: Sign"><br> -->
+
+
+                                <div style="padding-top: 20px; ;">
+                                    <span for="Security_Policy">Security Policy:</span>
+                                    <select style="font-size: 16px;" id="Security_Policy" ng-model="form.OPC_SERVER_SECURITY_POLICY" ng-init="form.OPC_SERVER_SECURITY_POLICY = 'None'">
+                                        <option value="None">None</option>
+                                        <option value="Basic256">Basic256</option>
+                                        <option value="Basic128Rsa15">Basic128Rsa15</option>
+                                        <option value="Basic256Sha256">Basic256Sha256</option>
+                                        <option value="Aes128Sha256RsaOaep">Aes128Sha256RsaOaep</option>
+                                        <option value="Aes256Sha256RsaPss">Aes256Sha256RsaPss</option>
+                                    </select>
+                                </div>
+
+                                <div style="padding-top: 20px; padding-bottom: 20px;">
+                                    <span for="Security_Mode">Security Mode:</span>
+                                    <select style="font-size: px;" id="Security_Mode" ng-model="form.OPC_SERVER_SECURITY_MODE" ng-init="form.OPC_SERVER_SECURITY_MODE = 'None'">
+                                        <option value="None">None</option>
+                                        <option value="Sign">Sign</option>
+                                        <option value="SignAndEncrypt">SignAndEncrypt</option>
+                                        
+                                    </select>
+                                </div>
+
+                                <label for="Namespace">Namespace Id</label>
+                                <input type="text" id="Namespace" ng-model="form.OPC_SERVER_NAMESPACE" placeholder="Eg: 2"> <br>
+
+                                <label for="AddressPrefix">Address Prefix</label>
+                                <input type="text" id="AddressPrefix" ng-model="form.OPC_SERVER_ADDRESS_PREFIX" ng-init="form.OPC_SERVER_ADDRESS_PREFIX = ''" placeholder="Eg: Channel1.Device2."><br>
+
+                                <label for="AddressSuffix">Address Suffix</label>
+                                <input type="text" id="AddressSuffix" ng-model="form.OPC_SERVER_ADDRESS_SUFFIX" ng-init="form.OPC_SERVER_ADDRESS_SUFFIX = ''" placeholder="Eg: .out or keep it empty"><br>
+
+
+
+                                <label for="prefix">Tag Prefix</label>
+                                <input type="text" id="prefix" ng-model="form.TAG_PREFIX"><br>
+                                <label for="tagtype">Tag Type</label>
+                                <input type="text" id="tagtype" ng-model="form.DATA_TAG_TYPE"><br>
+                                <label for="subint">Subscribe Interval</label>
+                                <input type="number" id="subint" ng-model="form.SUBSCRIBE_INTERVAL"
+                                    placeholder="in ms"><br>
+                                <!-- <br>Prefer Address<br>
+                                <label class="switch" for="prefer">
+                                    <input type="checkbox" id="prefer" ng-model="form.PROG_ID_PREFER" ng-true-value="1"
+                                        ng-false-value="0">
+                                    <span class="slider round"></span>
+                                </label> -->
+
+                                <div style="opacity: 0.5; padding-top: 20px;">
+                                    <span for="">UA NodeId: 
+                                        ns={{form.OPC_SERVER_NAMESPACE}};{{form.OPC_SERVER_PREFERENCE}}={{form.OPC_SERVER_ADDRESS_PREFIX}}tagname{{form.OPC_SERVER_ADDRESS_SUFFIX}}
+                                    </span>
+                                </div>
+
+                                <div style="opacity: 0.5; padding-top: 20px;">
+                                    <span for="">Cloud Tag: 
+                                        {{form.TAG_PREFIX}}tagname
+                                    </span>
+                                </div>
+
+                                <div style="padding-top: 20px; ;">
+                                    <span for="Preference">Preference:</span>
+                                    <select style="font-size: 20px;" id="Preference" ng-model="form.OPC_SERVER_PREFERENCE" ng-init="form.OPC_SERVER_PREFERENCE = 's'">
+                                        <option value="s">s</option>
+                                        <option value="i">i</option>
+                                        <option value="b">b</option>
+                                    </select>
+                                </div>
+                                
+                                
+                                
+                                
+                                
+                                
+
+                                <!-- <textarea id="" cols="30" rows="10" ng-model="form.taglist"></textarea><br> -->
+                                <br><br>
+                                <button ng-click="setForm(form.id, $index)" class="positivebutton">Save</button>
+                                <button ng-click="deleteForm($index)" class="negativebutton" style="width: 150px">Delete
+                                    OPC Server</button>
+                            </div>
+
+                            <!-- <br><br> -->
+
+                            <div ng-show="form.static.tags">
+                                <!-- <div class="cloud bold heading">Tags </div> -->
+                                <br>
+                                <div id="tagForm" class="tabledisplay"
+                                    style="min-height:200px;max-height:50vh;overflow: auto; border-bottom:1px solid rgb(119, 119, 119);">
+                                    <!-- <input type="text" ng-model="tag.dataTagId" width="50" disabled> -->
+                                    <table style="font-size:12px;">
+                                        <tr>
+                                            <td>Tag</td>
+                                            <td>Time</td>
+                                            <td>Value</td>
+                                            <td>Address</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr ng-repeat="tag in form.tags">
+                                            <td>{{tag.dataTagId}}</td>
+                                            <td>{{TsRender[form.TAG_PREFIX.concat(tag.dataTagId)] }}</td>
+                                            <td>{{TagsRender[form.TAG_PREFIX.concat(tag.dataTagId)] }}</td>
+                                            <td>{{tag.address}}</td>
+                                            
+                                            <td><span ng-click="deleteTag(form, $index)" class=""
+                                                    style="font-weight: bold; cursor: pointer;margin:2px;color:red;font-size: 10px;">Delete
+                                                </span></td>
+                                        </tr>
+                                    </table>
+                                    <!-- <span style="font-weight: 200;">{{tag.dataTagId}}</span>
+	                        
+                            <span style="font-size: 0.75em; padding-left: 5px;"  >&nbsp; {{TsRender[form.TAG_PREFIX.concat(tag.dataTagId)] }}</span>
+	                        <span style="font-size: 0.95em; padding-left: 10px;"  >&nbsp; {{TagsRender[form.TAG_PREFIX.concat(tag.dataTagId)] }}</span>
+                            <span ng-click="deleteTag(form, $index)" class="negativebutton" style="font-size:12px;font-weight: 300; cursor: pointer;">Delete </span> -->
+
+                                </div>
+                                <input type="text" ng-model="form.newTag">
+                                <button ng-click="addTag(form)" class="positivebutton">Add Tag</button>
+
+                                <br>
+                                <h4>Upload tags from File</h4>
+                                <!-- <span class="hint__circle" title="CSV file must include headername `Tags`">?</span> -->
+                                <label for="file" style="display: inline;">
+                                    <span style="text-decoration: underline;">
+                                        Choose a file</span>&nbsp;&nbsp;
+                                    <input type="file" id="file" name="file" />
+                                </label>
+                                <button ng-click="addCSV(form)" class="positivebutton">Upload</button>
+                            </div>
+
+                            <div ng-show="form.static.logs">
+                                <pre id="pre">
+	                		<!-- --- -->
+	                	</pre> <br>
+                            </div>
+                        </div>
+                    </details>
+
+                    <hr>
+
+                </div>
+
+                <!-- {{forms}} -->
+                <br>
+                <!-- <button onclick="this.disabled=true;document.getElementById('config_msg').innerHTML='Started';start();" class="positivebutton" id="startopc">Start OPC</button> -->
+                <!-- <button onclick="stop();document.getElementById('startopc').disabled=false;document.getElementById('config_msg').innerHTML='Stopped';" class="negativebutton" id="stopopc">Stop OPC</button> -->
+                <button ng-click="addForm()" class="positivebutton">Add OPC</button>
+                <button ng-click="stopAll()" class="negativebutton" style="width: 100px;">Stop all OPC</button>
+
+                <!-- <hr> -->
+                <!-- <br><br><div id="config_msg"></div> -->
+
+            </div>
+
+        </div>
+        <script>
+            function togglePasswordVisibility() {
+                var passwordInput = document.getElementById("password-input");
+                var icon = document.querySelector(".toggle-password i");
+
+                if (passwordInput.type === "password") {
+                    passwordInput.type = "text";
+                    icon.classList.remove("fa-eye-slash");
+                    icon.classList.add("fa-eye");
+                } else {
+                    passwordInput.type = "password";
+                    icon.classList.remove("fa-eye");
+                    icon.classList.add("fa-eye-slash");
+                }
+            }
+
+
+
+
+
+        </script>
+</body>
+
+</html>
